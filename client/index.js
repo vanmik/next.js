@@ -20,7 +20,6 @@ const {
   __NEXT_DATA__: {
     component,
     errorComponent,
-    props,
     err,
     pathname,
     query
@@ -49,7 +48,13 @@ export default (onError) => {
   })
 
   const hash = location.hash.substring(1)
-  render({ Component, props, hash, err, emitter }, onError)
+
+  // Run the getInitialProps once to load dynamic components
+  // when doing the initial render.
+  loadGetInitialProps(Component, { err, pathname, query })
+    .then((props) => {
+      render({ Component, props, hash, err, emitter }, onError)
+    })
 
   return emitter
 }

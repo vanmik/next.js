@@ -18,11 +18,12 @@ export default class Document extends Component {
   }
 
   render () {
+    const { chunkNames } = this.props
     return <html>
       <Head />
       <body>
         <Main />
-        <NextScript />
+        <NextScript chunkNames={chunkNames} />
       </body>
     </html>
   }
@@ -59,7 +60,7 @@ export class NextScript extends Component {
     _documentProps: PropTypes.any
   }
 
-  getChunkScript (filename) {
+  getCoreScript (filename) {
     const { __NEXT_DATA__ } = this.context._documentProps
     let { buildStats } = __NEXT_DATA__
     const hash = buildStats ? buildStats[filename].hash : '-'
@@ -69,6 +70,15 @@ export class NextScript extends Component {
     )
   }
 
+  getChunkScripts () {
+    const { chunkNames } = this.props
+    const chunkScripts = chunkNames.map((name) => (
+      <script key={name} type='text/javascript' src={`/_webpack/chunks/${name}`} />
+    ))
+
+    return chunkScripts
+  }
+
   render () {
     const { staticMarkup, __NEXT_DATA__ } = this.context._documentProps
 
@@ -76,8 +86,9 @@ export class NextScript extends Component {
       {staticMarkup ? null : <script dangerouslySetInnerHTML={{
         __html: `__NEXT_DATA__ = ${htmlescape(__NEXT_DATA__)}; module={};`
       }} />}
-      { staticMarkup ? null : this.getChunkScript('commons.js') }
-      { staticMarkup ? null : this.getChunkScript('main.js') }
+      { staticMarkup ? null : this.getCoreScript('commons.js') }
+      { this.getChunkScripts() }
+      { staticMarkup ? null : this.getCoreScript('main.js') }
     </div>
   }
 }

@@ -87,17 +87,20 @@ async function doRender (req, res, pathname, query, {
 
   if (res.finished) return
 
+  const { clientProps, chunkNames } = getChunkNames(props)
+
   const doc = createElement(Document, {
     __NEXT_DATA__: {
       component,
       errorComponent,
-      props,
+      props: clientProps,
       pathname,
       query,
       buildId,
       buildStats,
       err: (err && dev) ? errorToJSON(err) : null
     },
+    chunkNames,
     dev,
     staticMarkup,
     ...docProps
@@ -171,4 +174,26 @@ async function ensurePage (page, { dir, hotReloader }) {
   if (page === '_error' || page === '_document') return
 
   await hotReloader.ensurePage(page)
+}
+
+function getChunkNames (currentProps) {
+  const chunkNamesMap = {}
+  const clientProps = {}
+
+  Object.keys(currentProps).forEach((name) => {
+    const value = currentProps[name]
+    if (value && value.__webpackChunkName) {
+      chunkNamesMap[value.__webpackChunkName] = true
+      clientProps[name] = { __webpackChunkName: value.__webpackChunkName }
+    } else {
+      clientProps[name] = value
+    }
+  })
+
+  const chunkNames = Object.keys(chunkNamesMap)
+
+  return {
+    chunkNames,
+    clientProps
+  }
 }

@@ -16,7 +16,7 @@ const buildImport = (args) => (template(`
       require.ensure([], (require) => {
         let m = require(SOURCE)
         m = m.default || m
-        m.__webpackChunkName = '${args.name}'
+        m.__webpackChunkName = '${args.name}.js'
         resolve(m);
       }, 'chunks/${args.name}.js');
     })
